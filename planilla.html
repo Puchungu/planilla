@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prototipo de Sistema de Planilla - El Salvador</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-100 font-sans text-slate-800 antialiased min-h-screen p-4 sm:p-6">
+
+    <div class="max-w-6xl mx-auto">
+        <!-- Encabezado del Prototipo -->
+        <header class="bg-indigo-900 text-white rounded-2xl p-6 shadow-lg mb-6 flex flex-col md:flex-row justify-between items-center">
+            <div>
+                <span class="bg-indigo-700 text-indigo-200 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Actividad Formativa - Semana 3</span>
+                <h1 class="text-2xl sm:text-3xl font-bold mt-2">Sistema Inteligente de Planilla</h1>
+                <p class="text-indigo-200 text-sm mt-1">Simulador con validación normativa de El Salvador (Tope ISSS: $1,000.00 | Sal. Mínimo: $408.80)</p>
+            </div>
+            <div class="mt-4 md:mt-0 bg-indigo-800/80 border border-indigo-700 px-4 py-3 rounded-xl text-right">
+                <p class="text-xs text-indigo-300">Normativa aplicada</p>
+                <p class="text-sm font-bold text-white">ISSS (3% - Tope $1000) | AFP (7.25%)</p>
+            </div>
+        </header>
+
+        <!-- Contenido Principal -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Columna Izquierda: Formulario de Entrada (5 Columnas) -->
+            <div class="lg:col-span-5 bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-user-pen text-indigo-600"></i> Datos del Trabajador
+                </h2>
+                
+                <form id="formPlanilla" class="space-y-4" onsubmit="event.preventDefault(); calcularPlanilla();">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Nombre Completo</label>
+                        <input type="text" id="nombre" required placeholder="Ej. Juan Pérez" 
+                            class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm outline-none transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Cargo / Puesto</label>
+                        <input type="text" id="cargo" required placeholder="Ej. Asistente" 
+                            class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm outline-none transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Salario Bruto Mensual ($)</label>
+                        <input type="number" id="salarioBruto" step="0.01" min="0" required placeholder="0.00" oninput="calcularPlanilla()"
+                            class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-semibold text-slate-900 outline-none transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Tipo de Trabajador</label>
+                        <select id="tipoTrabajador" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-white outline-none transition">
+                            <option value="Administrativo">Administrativo</option>
+                            <option value="Operativo">Operativo</option>
+                            <option value="Comercial">Comercial</option>
+                            <option value="Maquila">Maquila</option>
+                        </select>
+                    </div>
+
+                    <div class="border-t border-slate-200 pt-4 mt-2">
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Retenciones y Casos Especiales</p>
+                        
+                        <div class="space-y-2.5">
+                            <div>
+                                <label class="block text-xs text-slate-600 mb-1">Pensión Alimenticia Ordenada ($)</label>
+                                <input type="number" id="pensionAlimenticia" step="0.01" min="0" placeholder="0.00" oninput="calcularPlanilla()"
+                                    class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-indigo-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs text-slate-600 mb-1">Otros Descuentos / Deudas / Embargos ($)</label>
+                                <input type="number" id="otrosDescuentos" step="0.01" min="0" placeholder="0.00" oninput="calcularPlanilla()"
+                                    class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-indigo-500">
+                            </div>
+
+                            <!-- Opciones simuladas para activar las alertas jurídicas de la rúbrica -->
+                            <div class="pt-2 space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                                <span class="text-[11px] font-bold text-slate-600 uppercase tracking-wider block mb-1">Simulador de Banderas de Alerta:</span>
+                                
+                                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                    <input type="checkbox" id="chkAutorizacionDeuda" onchange="calcularPlanilla()" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                                    <span>¿Descuento voluntario sin autorización firmada?</span>
+                                </label>
+
+                                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                    <input type="checkbox" id="chkCotizacionNoEnterada" onchange="calcularPlanilla()" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                                    <span>¿Historial con cuota retenida no enterada al ISSS/AFP?</span>
+                                </label>
+
+                                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                    <input type="checkbox" id="chkEmbargoOrdinario" onchange="calcularPlanilla()" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                                    <span>¿Aplicar embargo por deuda ordinaria (verificar límite)?</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Columna Derecha: Resultados y Consola de Alertas (7 Columnas) -->
+            <div class="lg:col-span-7 space-y-6">
+                
+                <!-- Tarjeta de Resultados (Desglose de Planilla) -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-file-invoice-dollar text-emerald-600"></i> Desglose de Cálculo
+                    </h2>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 block">Salario Bruto</span>
+                            <span id="resBruto" class="text-2xl font-black text-slate-900">$0.00</span>
+                        </div>
+                        <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200">
+                            <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 block">Salario Líquido a Pagar</span>
+                            <span id="resLiquido" class="text-2xl font-black text-emerald-700">$0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Deducciones Legales y Aplicadas</p>
+                        
+                        <div class="flex justify-between items-center py-2 border-b border-slate-100 text-sm">
+                            <span class="text-slate-600 flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-blue-500"></span> ISSS (3% - <span class="text-xs text-slate-400">Tope $1,000</span>)
+                            </span>
+                            <span id="resIsss" class="font-semibold text-slate-800">$0.00</span>
+                        </div>
+
+                        <div class="flex justify-between items-center py-2 border-b border-slate-100 text-sm">
+                            <span class="text-slate-600 flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-blue-500"></span> AFP (7.25%)
+                            </span>
+                            <span id="resAfp" class="font-semibold text-slate-800">$0.00</span>
+                        </div>
+
+                        <div class="flex justify-between items-center py-2 border-b border-slate-100 text-sm">
+                            <span class="text-slate-600 flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-amber-500"></span> Pensión Alimenticia
+                            </span>
+                            <span id="resPension" class="font-semibold text-slate-800">$0.00</span>
+                        </div>
+
+                        <div class="flex justify-between items-center py-2 border-b border-slate-100 text-sm">
+                            <span class="text-slate-600 flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-purple-500"></span> Otros Descuentos / Deudas
+                            </span>
+                            <span id="resOtros" class="font-semibold text-slate-800">$0.00</span>
+                        </div>
+
+                        <div class="flex justify-between items-center pt-2 font-bold text-slate-900">
+                            <span>Total Deducciones:</span>
+                            <span id="resTotalDeducciones" class="text-rose-600">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Consola de Alertas Jurídicas Automatizadas -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> Consola de Alertas Jurídicas
+                    </h2>
+                    <p class="text-xs text-slate-500 mb-4">El sistema analiza de forma automática los umbrales legales y banderas de control:</p>
+
+                    <div id="contenedorAlertas" class="space-y-3">
+                        <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl text-slate-500 text-sm flex items-center gap-3">
+                            <i class="fa-solid fa-circle-info text-slate-400 text-lg"></i>
+                            <div>
+                                <p class="font-bold">Esperando datos</p>
+                                <p class="text-xs">Ingrese el salario bruto y los datos del trabajador para iniciar la validación.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de Automatización y Reglas Legales -->
+    <script>
+        function calcularPlanilla() {
+            const salarioBrutoInput = document.getElementById('salarioBruto').value;
+            const salarioBruto = parseFloat(salarioBrutoInput);
+
+            if (isNaN(salarioBruto) || salarioBrutoInput === '') {
+                document.getElementById('resBruto').innerText = '$0.00';
+                document.getElementById('resIsss').innerText = '$0.00';
+                document.getElementById('resAfp').innerText = '$0.00';
+                document.getElementById('resPension').innerText = '$0.00';
+                document.getElementById('resOtros').innerText = '$0.00';
+                document.getElementById('resTotalDeducciones').innerText = '-$0.00';
+                document.getElementById('resLiquido').innerText = '$0.00';
+                document.getElementById('contenedorAlertas').innerHTML = `
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl text-slate-500 text-sm flex items-center gap-3">
+                        <i class="fa-solid fa-circle-info text-slate-400 text-lg"></i>
+                        <div>
+                            <p class="font-bold">Esperando datos</p>
+                            <p class="text-xs">Ingrese el salario bruto para realizar el cálculo normativo.</p>
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            const pensionAlimenticia = parseFloat(document.getElementById('pensionAlimenticia').value) || 0;
+            const otrosDescuentos = parseFloat(document.getElementById('otrosDescuentos').value) || 0;
+            
+            const sinAutorizacion = document.getElementById('chkAutorizacionDeuda').checked;
+            const noEnterada = document.getElementById('chkCotizacionNoEnterada').checked;
+            const embargoOrdinario = document.getElementById('chkEmbargoOrdinario').checked;
+
+            // Cálculos normativos El Salvador
+            const salarioBaseIsss = Math.min(salarioBruto, 1000.00);
+            const isss = salarioBaseIsss * 0.03;
+            const afp = salarioBruto * 0.0725;
+
+            const totalDeducciones = isss + afp + pensionAlimenticia + otrosDescuentos;
+            const salarioLiquido = Math.max(0, salarioBruto - totalDeducciones);
+
+            // Mostrar resultados
+            document.getElementById('resBruto').innerText = '$' + salarioBruto.toFixed(2);
+            document.getElementById('resIsss').innerText = '$' + isss.toFixed(2) + (salarioBruto > 1000 ? ' (Tope $1k aplicado)' : '');
+            document.getElementById('resAfp').innerText = '$' + afp.toFixed(2);
+            document.getElementById('resPension').innerText = '$' + pensionAlimenticia.toFixed(2);
+            document.getElementById('resOtros').innerText = '$' + otrosDescuentos.toFixed(2);
+            document.getElementById('resTotalDeducciones').innerText = '-$' + totalDeducciones.toFixed(2);
+            document.getElementById('resLiquido').innerText = '$' + salarioLiquido.toFixed(2);
+
+            let alertas = [];
+
+            // 1. Alerta de Salario Mínimo ($408.80)
+            if (salarioBruto < 408.80) {
+                alertas.push({
+                    tipo: 'danger',
+                    titulo: 'Infracción de Salario Mínimo',
+                    mensaje: `ALERTA: El salario registrado ($${salarioBruto.toFixed(2)}) está por debajo del salario mínimo aplicable ($408.80).`
+                });
+            }
+
+            // 2. Alerta de Descuento sin Autorización
+            if (sinAutorizacion || (otrosDescuentos > 0 && sinAutorizacion)) {
+                alertas.push({
+                    tipo: 'warning',
+                    titulo: 'Control de Descuentos Voluntarios',
+                    mensaje: 'ALERTA: Se está intentando realizar un descuento que requiere fundamento legal o autorización firmada por el trabajador.'
+                });
+            }
+
+            // 3. Alerta de Orden de Retención por Alimentos
+            if (pensionAlimenticia > 0) {
+                // Validación adicional si la pensión compromete desproporcionadamente el ingreso
+                let alertaExtra = '';
+                if (pensionAlimenticia > (salarioBruto * 0.5)) {
+                    alertaExtra = ' (Nota: El monto supera el 50% del bruto, verifique los límites judiciales para asegurar subsidio de subsistencia).';
+                }
+                alertas.push({
+                    tipo: 'info',
+                    titulo: 'Retención Judicial Activa',
+                    mensaje: `ALERTA: Existe una orden de retención por alimentos por $${pensionAlimenticia.toFixed(2)}.${alertaExtra}`
+                });
+            }
+
+            // 4. Alerta de Cotización No Enterada
+            if (noEnterada) {
+                alertas.push({
+                    tipo: 'danger',
+                    titulo: 'Riesgo de Incumplimiento Previsional / ISSS',
+                    mensaje: 'ALERTA: Se descontó una cotización al trabajador, pero el sistema registra que no ha sido enterada a la institución correspondiente.'
+                });
+            }
+
+            // 5. Alerta de Límite de Embargo por Deuda Ordinaria
+            if (embargoOrdinario || otrosDescuentos > 0 && embargoOrdinario) {
+                alertas.push({
+                    tipo: 'warning',
+                    titulo: 'Verificación de Embargo Civil/Ordinario',
+                    mensaje: 'ALERTA: El embargo solicitado corresponde a una deuda ordinaria y debe verificarse el límite legal aplicable sobre el excedente de salario mínimo.'
+                });
+            }
+
+            const contenedor = document.getElementById('contenedorAlertas');
+            contenedor.innerHTML = '';
+
+            if (alertas.length === 0) {
+                contenedor.innerHTML = `
+                    <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl text-emerald-800 text-sm flex items-center gap-3">
+                        <i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i>
+                        <div>
+                            <p class="font-bold">Todo en orden</p>
+                            <p class="text-xs text-emerald-700">No se detectan anomalías normativas ni alertas jurídicas para este registro.</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                alertas.forEach(alerta => {
+                    let estilos = '';
+                    let icono = '';
+
+                    if (alerta.tipo === 'danger') {
+                        estilos = 'bg-rose-50 border-rose-200 text-rose-900';
+                        icono = 'fa-circle-xmark text-rose-600';
+                    } else if (alerta.tipo === 'warning') {
+                        estilos = 'bg-amber-50 border-amber-200 text-amber-900';
+                        icono = 'fa-triangle-exclamation text-amber-600';
+                    } else {
+                        estilos = 'bg-sky-50 border-sky-200 text-sky-900';
+                        icono = 'fa-circle-info text-sky-600';
+                    }
+
+                    contenedor.innerHTML += `
+                        <div class="border p-3.5 rounded-xl text-sm flex items-start gap-3 ${estilos}">
+                            <i class="fa-solid ${icono} text-base mt-0.5"></i>
+                            <div>
+                                <p class="font-bold text-xs uppercase tracking-wide">${alerta.titulo}</p>
+                                <p class="text-xs mt-0.5 leading-relaxed">${alerta.mensaje}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        }
+    </script>
+</body>
+</html>
